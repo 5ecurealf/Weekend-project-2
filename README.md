@@ -1,6 +1,6 @@
 # Joke Generator App
 
-A web application that generates jokes based on user-selected topics, tones, kinds, and temperatures. Users can also analyze generated jokes using visual charts.
+A web application that generates jokes based on user-selected topics, tones, kinds, and temperatures. Users can also analyze generated jokes.
 
 ## Features
 
