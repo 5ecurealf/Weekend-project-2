@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Joke Generator App
+
+A web application that generates jokes based on user-selected topics, tones, kinds, and temperatures. Users can also analyze generated jokes using visual charts.
+
+## Features
+
+- Generate jokes based on different topics, tones, and kinds.
+- Adjust the temperature to control joke creativity.
+- Analyze jokes to get a detailed
+
+## Tech Stack
+
+- **Frontend**: React, Next.js, TypeScript
+- **Backend**: Vercel's `useChat` API
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js (>= 12.x)
+- npm or yarn
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the repository**:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+   ```sh
+   git clone https://github.com/5ecurealf/Weekend-project-2.git
+   cd joke-lab-app
+   ```
 
-## Learn More
+2. **Install dependencies**:
+   ```sh
+   npm install
+   # or
+   yarn install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+### Running the Application
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Configure the API**:
+   configure your model's endpoint to call the right API in joke-lab-app/app/api/chat/route.ts
+   ```
+   const openai = new OpenAI({
+   baseURL: "https://amended-sean-telescope-producing.trycloudflare.com/v1",
+   });
+   ```
+2. **Start the development server**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+   ```sh
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+   The app will be available at [http://localhost:3000](http://localhost:3000).
