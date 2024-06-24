@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 
 const openai = new OpenAI({
-  baseURL: "https://yourEndpoint.com/v1",
+  baseURL: "https://amended-sean-telescope-producing.trycloudflare.com/v1",
 });
 
 export const runtime = "edge";
