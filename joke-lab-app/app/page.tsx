@@ -60,7 +60,7 @@ export default function Chat() {
   const handleAnalyzeJoke = () => {
     append({
       role: "user",
-      content: `Analyze this joke: "${joke}"`,
+      content: jokeAnalysisPrompt(joke),
     });
     setCanAnalyze(false);
   };
@@ -69,6 +69,7 @@ export default function Chat() {
   if (
     messages.length > 0 &&
     !messages[messages.length - 1]?.content.startsWith("Generate") &&
+    !messages[messages.length - 1]?.content.startsWith("Analyze") &&
     joke !== messages[messages.length - 1]?.content
   ) {
     setJoke(messages[messages.length - 1]?.content);
@@ -81,6 +82,23 @@ export default function Chat() {
 
   const displayMessages = filteredMessages.slice(-2);
 
+  const jokeAnalysisPrompt = (joke: string) => `Analyze the following joke:
+
+"${joke}"
+
+Evaluate the joke based on the following criteria:
+
+ **Funniness**: How funny is the joke on a scale from 1 to 10? Provide an explanation for the rating.
+ **Appropriateness**: Is the joke appropriate for a general audience? Consider cultural, social, and age-related sensitivities.
+ **Offensiveness**: Does the joke contain any content that could be considered offensive? If so, specify what aspects are offensive and to whom.
+ **Clarity**: Is the joke clear and easy to understand, or does it require specific knowledge or context to be funny?
+ **Originality**: How original is the joke? Has it been heard before, or does it offer a fresh perspective?
+ **Relevance**: Is the joke relevant to the context it is likely to be told in? Does it align well with the selected topic?
+ **Tone**: Does the tone of the joke match the intended tone (e.g., sarcastic, goofy, witty, dark)?
+ **Structure**: Is the joke well-structured? Does it have a clear setup and punchline?
+
+Provide a detailed analysis based on these criteria.
+`;
   return (
     <main className="mx-auto w-full p-24 flex flex-col">
       <div className="p4 m-4">
