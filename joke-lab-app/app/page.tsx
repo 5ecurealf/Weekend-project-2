@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useChat } from "ai/react";
 
 export default function Chat() {
@@ -35,6 +35,8 @@ export default function Chat() {
     temperature: "",
   });
 
+  const [analysisResult, setAnalysisResult] = useState("");
+
   const handleChange = ({
     target: { name, value },
   }: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +44,36 @@ export default function Chat() {
       ...state,
       [name]: value,
     });
+  };
+
+  // Function to handle the API request and process streamed response
+
+  const handleAnalyse = async () => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      setAnalysisResult(""); // Clear previous result
+
+      const response = await fetch("/api/analyse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ joke: lastMessage.content }),
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let analysisText = "";
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        analysisText += decoder.decode(value, { stream: true });
+      }
+
+      setAnalysisResult(analysisText);
+    }
   };
 
   return (
@@ -175,6 +207,30 @@ export default function Chat() {
           >
             {messages[messages.length - 1]?.content}
           </div>
+
+          {/* Button to make API request */}
+          <div
+            hidden={
+              messages.length === 0 ||
+              messages[messages.length - 1]?.content.startsWith("Generate")
+            }
+            className="bg-opacity-25 bg-gray-700 rounded-lg p-4"
+          >
+            <button
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              onClick={handleAnalyse}
+            >
+              Analyse Last Message
+            </button>
+          </div>
+
+          {/* Display the analysis result */}
+          {analysisResult && (
+            <div className="bg-opacity-25 bg-gray-700 rounded-lg p-4">
+              <h3 className="text-xl font-semibold">Analysis Result</h3>
+              <p>{analysisResult}</p>
+            </div>
+          )}
         </div>
       </div>
     </main>
