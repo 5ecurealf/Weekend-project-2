@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useChat } from "ai/react";
 
 export default function Chat() {
-  const { messages, append, isLoading } = useChat();
+  const { messages, setMessages, append, isLoading } = useChat();
   const topics = [
     { emoji: "👨‍💼", value: "Work" },
     { emoji: "🐶", value: "Animals" },
@@ -34,8 +34,9 @@ export default function Chat() {
     kind: "",
     temperature: "",
   });
-
-  const [analysisResult, setAnalysisResult] = useState("");
+  const [joke, setJoke] = useState("");
+  const [analysis, setAnalysis] = useState("");
+  const [canAnalyze, setCanAnalyze] = useState(false);
 
   const handleChange = ({
     target: { name, value },
@@ -46,35 +47,39 @@ export default function Chat() {
     });
   };
 
-  // Function to handle the API request and process streamed response
-
-  const handleAnalyse = async () => {
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      setAnalysisResult(""); // Clear previous result
-
-      const response = await fetch("/api/analyse", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ joke: lastMessage.content }),
-      });
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-      let analysisText = "";
-
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-        analysisText += decoder.decode(value, { stream: true });
-      }
-
-      setAnalysisResult(analysisText);
-    }
+  const handleGenerateJoke = () => {
+    setMessages([]);
+    append({
+      role: "user",
+      content: `Generate a ${state.kind} joke about ${state.topic} in a ${state.tone} tone with ${state.temperature} temperature.`,
+    });
+    setCanAnalyze(true);
+    setAnalysis("");
   };
+
+  const handleAnalyzeJoke = () => {
+    append({
+      role: "user",
+      content: `Analyze this joke: "${joke}"`,
+    });
+    setCanAnalyze(false);
+  };
+
+  // Update the joke when a new joke message is received
+  if (
+    messages.length > 0 &&
+    !messages[messages.length - 1]?.content.startsWith("Generate") &&
+    joke !== messages[messages.length - 1]?.content
+  ) {
+    setJoke(messages[messages.length - 1]?.content);
+  }
+  const filteredMessages = messages.filter(
+    (message) =>
+      !message.content.startsWith("Generate") &&
+      !message.content.startsWith("Analyze")
+  );
+
+  const displayMessages = filteredMessages.slice(-2);
 
   return (
     <main className="mx-auto w-full p-24 flex flex-col">
@@ -189,47 +194,28 @@ export default function Chat() {
               !state.kind ||
               !state.temperature
             }
-            onClick={() =>
-              append({
-                role: "user",
-                content: `Generate a ${state.kind} joke about ${state.topic} in a ${state.tone} tone with ${state.temperature} temperature.`,
-              })
-            }
+            onClick={handleGenerateJoke}
           >
             Generate Joke
           </button>
-          <div
-            hidden={
-              messages.length === 0 ||
-              messages[messages.length - 1]?.content.startsWith("Generate")
-            }
-            className="bg-opacity-25 bg-gray-700 rounded-lg p-4"
-          >
-            {messages[messages.length - 1]?.content}
-          </div>
-
-          {/* Button to make API request */}
-          <div
-            hidden={
-              messages.length === 0 ||
-              messages[messages.length - 1]?.content.startsWith("Generate")
-            }
-            className="bg-opacity-25 bg-gray-700 rounded-lg p-4"
-          >
-            <button
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-              onClick={handleAnalyse}
+          {displayMessages.map((message, index) => (
+            <div
+              key={index}
+              className="bg-opacity-25 bg-gray-700 rounded-lg p-4 mt-4"
             >
-              Analyse Last Message
-            </button>
-          </div>
-
-          {/* Display the analysis result */}
-          {analysisResult && (
-            <div className="bg-opacity-25 bg-gray-700 rounded-lg p-4">
-              <h3 className="text-xl font-semibold">Analysis Result</h3>
-              <p>{analysisResult}</p>
+              <p>{message.content}</p>
             </div>
+          ))}
+          {joke && (
+            <>
+              <button
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 mt-4"
+                disabled={isLoading || !canAnalyze}
+                onClick={handleAnalyzeJoke}
+              >
+                Analyze Joke
+              </button>
+            </>
           )}
         </div>
       </div>
