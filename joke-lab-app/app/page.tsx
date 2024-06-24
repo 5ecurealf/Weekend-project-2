@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useChat } from "ai/react";
 
 export default function Chat() {
-  const { messages, setMessages, append, isLoading } = useChat();
   const topics = [
     { emoji: "👨‍💼", value: "Work" },
     { emoji: "🐶", value: "Animals" },
@@ -22,18 +21,21 @@ export default function Chat() {
     { emoji: "🚪", value: "Knock-Knock" },
     { emoji: "📖", value: "Story" },
   ];
-  const temperatures = [
-    { emoji: "🥶", value: "Low" },
-    { emoji: "😊", value: "Medium" },
-    { emoji: "🔥", value: "High" },
-  ];
 
   const [state, setState] = useState({
     topic: "",
     tone: "",
     kind: "",
-    temperature: "",
+    temperature: "1",
   });
+
+  const { messages, append, setMessages, isLoading } = useChat({
+    api: "/api/chat",
+    body: {
+      temperature: state.temperature, // Pass the temperature to the API endpoint
+    },
+  });
+
   const [joke, setJoke] = useState("");
   const [analysis, setAnalysis] = useState("");
   const [canAnalyze, setCanAnalyze] = useState(false);
@@ -58,10 +60,25 @@ export default function Chat() {
   };
 
   const handleAnalyzeJoke = () => {
-    append({
-      role: "user",
-      content: jokeAnalysisPrompt(joke),
-    });
+    const originalTemperature = state.temperature;
+
+    // Temporarily set temperature to 1 for analysis
+    setState((prevState) => ({ ...prevState, temperature: "1" }));
+
+    // Perform the analysis
+    setTimeout(() => {
+      append({
+        role: "user",
+        content: jokeAnalysisPrompt(joke),
+      });
+
+      // Reset the temperature back to the original value
+      setState((prevState) => ({
+        ...prevState,
+        temperature: originalTemperature,
+      }));
+    }, 0);
+
     setCanAnalyze(false);
   };
 
@@ -183,23 +200,20 @@ Provide a detailed analysis based on these criteria.
           <div className="space-y-4 bg-opacity-25 bg-gray-700 rounded-lg p-4">
             <h3 className="text-xl font-semibold">Temperature</h3>
             <div className="flex flex-wrap justify-center">
-              {temperatures.map(({ value, emoji }) => (
-                <div
-                  key={value}
-                  className="p-4 m-2 bg-opacity-25 bg-gray-600 rounded-lg"
-                >
-                  <input
-                    id={value}
-                    type="radio"
-                    name="temperature"
-                    value={value}
-                    onChange={handleChange}
-                  />
-                  <label className="ml-2" htmlFor={value}>
-                    {`${emoji} ${value}`}
-                  </label>
-                </div>
-              ))}
+              <input
+                type="range"
+                id="temperature"
+                name="temperature"
+                min="0"
+                max="2"
+                step="0.1"
+                value={state.temperature}
+                onChange={handleChange}
+                className="slider"
+              />
+              <label className="ml-2" htmlFor="temperature">
+                {state.temperature}
+              </label>
             </div>
           </div>
 
